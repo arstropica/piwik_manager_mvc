@@ -1,0 +1,260 @@
+<?php
+
+    /**
+    * Project: PiwikManager MVC
+    * File: /templates/home/settings.phtml
+    * Purpose: Settings Template.
+    */
+    namespace PiwikManager\Templates\Home;
+
+    if (! defined('PIWIKAPP'))
+        exit('No direct script access allowed');
+?>
+
+<div class="container">
+    <!-- main content output -->
+
+    <?php if (isset($data['sections']['header']['tabs'])) : ?>
+
+        <div id="tabs">
+
+            <ul>
+
+                <?php foreach ($data['sections']['header']['tabs'] as $route => $tab) : ?>
+
+                    <li
+                        class="<?php echo $tab['current'] ? "current" : ""; ?>"><a
+                            href="<?php echo $tab['current'] ? "#{$route}-tab" : $tab['link']; ?>"
+                            rel="<?php echo $route; ?>"><?php echo $tab['title']; ?></a></li>
+
+                    <?php endforeach; ?>
+
+            </ul>
+
+            <?php endif; ?>
+
+        <div id="<?php echo $data['sections']['action']; ?>-tab"
+            class="piwik_settings piwik_page_section">
+            <?php if (isset($data['meta']['title'])) : ?><h3
+                class="subtitle"><?php echo $data['meta']['title']; ?></h3><?php endif; ?>
+            <?php if (isset($data['meta']['description'])) : ?><p
+                class="subtitle-desc"><?php echo $data['meta']['description']; ?></p><?php endif; ?>
+
+            <?php
+                // Output Header (if any)
+                if ($data['sections']['header']['content'])
+                    echo implode("\n", $data['sections']['header']['content']);
+            ?>
+
+            <div id="dashboard_notices">
+                <?php
+                    // Output Messages (if any)
+                    if ($data['sections']['header']['messages'])
+                        echo implode("\n", $data['sections']['header']['messages']);
+                ?>
+            </div>
+
+            <form
+                action="<?php echo PIWIKACTION_BASE; ?>home/update&mode=ajax&type=settings"
+                method="POST" name="Piwik_Settings" id="piwik_edit_settings_form">
+
+                <table id="piwik_edit_settings_table"
+                    class="piwik_edit_table widefat">
+                    <tbody>
+
+                        <?php
+                            if (isset($data['sections']['settings'])) :
+
+                                $settings = $data['sections']['settings'];
+
+                                foreach ($settings as $option => $setting) :
+
+                                    switch ($option) :
+
+                                    case 'piwik_scheme':
+
+                                        break;
+
+                                    default:
+                                    ?>
+
+                                    <tr
+                                        class="form-field form-required <?php echo $setting['option_name']; ?>">
+
+                                        <th scope="row"><?php echo $setting['option_desc'] ? htmlspecialchars($setting['option_desc'], ENT_QUOTES) : $setting['option_name']; ?></th>
+
+                                        <td>
+
+                                            <?php 
+                                                switch ($option) :
+
+                                                case 'piwik_url' :
+
+                                                ?>
+
+                                                <input type="hidden"
+                                                    name="settings[piwik_scheme][option_desc]"
+                                                    value="<?php echo htmlspecialchars($settings['piwik_scheme']['option_desc'], ENT_QUOTES); ?>"
+                                                    class="input_<?php echo $setting['option_name']; ?>" /> 
+
+                                                <select
+                                                    name="settings[piwik_scheme][option_value]"
+                                                    class="input_piwik_scheme">
+
+                                                    <option value="http"
+                                                        <?php echo $settings['piwik_scheme']['option_value'] == 'http' ? ' selected="selected"' : ''; ?>>HTTP</option>
+
+                                                    <option value="https"
+                                                        <?php echo $settings['piwik_scheme']['option_value'] == 'https' ? ' selected="selected"' : ''; ?>>HTTPS</option>
+
+                                                </select> ://
+
+                                                <input type="text"
+                                                    name="settings[<?php echo $setting['option_name']; ?>][option_value]"
+                                                    value="<?php echo htmlspecialchars($setting['option_value'], ENT_QUOTES); ?>"
+                                                    title="<?php echo $setting['option_desc'] ? htmlspecialchars($setting['option_desc'], ENT_QUOTES) : $setting['option_name']; ?>"
+                                                    class="input_<?php echo $setting['option_name']; ?> textbox required <?php echo ($option == "piwik_url") ? 'url' : ''; ?>" />
+
+                                                <?php                                            
+
+                                                    break;
+
+                                                case 'accounts_products' :
+
+                                                ?>
+
+                                                <select
+                                                    name="settings[accounts_products][option_value][]"
+                                                    class="input_accounts_products" 
+                                                    multiple="multiple">
+
+                                                    <option value="" class="clearProducts">
+                                                        Select Product(s)
+                                                    </option>                                                    
+
+                                                    <?php foreach ($data['sections']['account_products'] as $product) : ?>
+
+                                                        <option 
+                                                            value="<?php echo $product; ?>"
+                                                            <?php echo (in_array($product, $setting['option_value'])) ? ' selected="selected"' : ''; ?>>
+                                                            <?php echo rawurldecode($product); ?>
+                                                        </option>
+
+                                                        <?php endforeach; ?>
+
+                                                </select>
+
+                                                <?php
+
+                                                    break;
+
+                                                default :
+
+                                                ?>
+
+                                                <input type="password"
+                                                    name="settings[<?php echo $setting['option_name']; ?>][option_value]"
+                                                    value="<?php echo htmlspecialchars($setting['option_value'], ENT_QUOTES); ?>"
+                                                    title="<?php echo $setting['option_desc'] ? htmlspecialchars($setting['option_desc'], ENT_QUOTES) : $setting['option_name']; ?>"
+                                                    class="input_<?php echo $setting['option_name']; ?> textbox required <?php echo ($option == "piwik_url") ? 'url' : ''; ?>" />
+
+                                                <?php
+
+                                                    break;
+
+                                                    endswitch;
+
+                                            ?>
+
+                                            <input type="hidden"
+                                                name="settings[<?php echo $setting['option_name']; ?>][option_desc]"
+                                                value="<?php echo htmlspecialchars($setting['option_desc'], ENT_QUOTES); ?>"
+                                                class="input_<?php echo $setting['option_name']; ?>" />
+
+                                        </td>
+                                    </tr>
+
+                                    <?php
+                                        break;
+                                        endswitch
+                                    ;
+                                    endforeach
+                                    ;
+
+
+
+                                else :
+                            ?>
+
+                            <tr>
+
+                                <td>
+
+                                    <p class="content_middle_msg">Settings can not be modified at
+                                        this time.</p>
+
+                                </td>
+
+                            </tr>
+
+                            <?php endif; ?>
+
+                    </tbody>
+                </table>
+
+                <input type="hidden" name="scope" value="single" class="input_scope" />
+                <input type="hidden" name="referrer"
+                    value="<?php echo "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}"; ?>"
+                    class="input_referrer" />
+
+                <p class="submit">
+                    <input type="submit" name="submit_updatessettings"
+                        id="submit_updatessettings" class="button button-primary"
+                        value="Update Settings" />
+                </p>
+
+            </form>
+
+        </div>
+
+        <?php if (isset($data['sections']['header']['tabs'])) : ?>
+
+        </div>
+
+        <?php endif; ?>
+
+</div>
+
+<?php
+    // Output Footer (if any)
+    if ($data['sections']['footer']['content'])
+        echo implode("\n", $data['sections']['footer']['content']);
+?>
+
+
+<script type="text/javascript">
+
+    <?php echo "var PIWIKACTION_PORTAL = '" . PIWIKACTION_PORTAL . "';"; ?>
+
+    $(function () {
+
+        // Clear Account Products Menu
+        $('OPTION.clearProducts').on('click', function(e){
+
+            $(this).siblings().removeAttr('selected');
+
+        })
+
+        // Handle Ping
+        $('INPUT.sendPing').ping({
+            inputClass: '.input_last_checked',
+            outputClass: '.online .status',
+            ajaxSpinner: '.online .ajax_loading',
+            jsonTargetBase: PIWIKACTION_PORTAL,
+        });
+
+        $('#piwik_edit_settings_form').validate();
+
+    });
+
+</script>

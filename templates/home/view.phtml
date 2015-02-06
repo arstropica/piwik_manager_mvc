@@ -1,0 +1,180 @@
+<?php
+
+    /**
+    * Project: PiwikManager MVC
+    * File: /templates/home/view.phtml
+    * Purpose: View Account Template.
+    */
+    namespace PiwikManager\Templates\Home;
+
+    if (! defined('PIWIKAPP'))
+        exit('No direct script access allowed');
+?>
+
+<div class="container">
+    <!-- main content output -->
+
+    <?php if (isset($data['sections']['header']['tabs'])) : ?>
+
+        <div id="tabs">
+
+            <ul>
+
+                <?php foreach ($data['sections']['header']['tabs'] as $route => $tab) : ?>
+
+                    <li
+                        class="<?php echo $tab['current'] ? "current" : ""; ?>"><a
+                            href="<?php echo $tab['current'] ? "#{$route}-tab" : $tab['link']; ?>"
+                            rel="<?php echo $route; ?>"><?php echo $tab['title']; ?></a></li>
+
+                    <?php endforeach; ?>
+
+            </ul>
+
+            <?php endif; ?>
+
+        <div id="<?php echo $data['sections']['action']; ?>-tab"
+            class="account_type piwik_page_section">
+            <?php if (isset($data['meta']['title'])) : ?><h3
+                class="subtitle"><?php echo $data['meta']['title']; ?></h3><?php endif; ?>
+            <?php if (isset($data['meta']['description'])) : ?><p
+                class="subtitle-desc"><?php echo $data['meta']['description']; ?></p><?php endif; ?>
+
+            <?php
+                // Output Header (if any)
+                if ($data['sections']['header']['content'])
+                    echo implode("\n", $data['sections']['header']['content']);
+            ?>
+
+            <div id="dashboard_notices">
+                <?php
+                    // Output Messages (if any)
+                    if ($data['sections']['header']['messages'])
+                        echo implode("\n", $data['sections']['header']['messages']);
+                ?>
+            </div>
+
+            <div>
+
+                <input type="button" value="&laquo; Back" class="button back"
+                    onclick="history.back(-1)" />
+
+            </div>
+
+            <?php
+                if (isset($data['sections']['record'])) :
+
+                    $record = $data['sections']['record'];
+                ?>
+
+                <form name="Piwik_Accounts" id="piwik_view_account_form">
+
+                    <table id="piwik_view_account_table"
+                        class="piwik_view_table widefat">
+                        <tbody>
+                            <tr class="form-field form-required domain">
+                                <th scope="row">Domain</th>
+                                <td>
+                                    <?php echo $record['protocol']; ?>
+                                    :// 
+                                    <?php echo $record['domain']; ?>
+                                </td>
+                            </tr>
+                            <tr class="form-field piwik account">
+                                <th scope="row">Piwik Account</th>
+                                <td>
+                                    <?php
+                                        if ($record['match'] && $record['site_id']) {
+
+                                            echo '<a href="' . $record['piwikurl'] .
+                                            '" title="Visit Dashboard" target="_blank">Visit Dashboard</a>';
+                                        } else {
+
+                                            echo "Account has not been created";
+                                        }
+                                    ?>
+                                </td>
+                            </tr>
+                            <tr class="form-field form-required active">
+                                <th scope="row">Tracking</th>
+                                <td>
+                                    <?php echo $record['active'] ? "Active" : "Not Active"; ?>
+                                </td>
+                            </tr>
+                            <tr class="form-field form-required ping">
+                                <th scope="row">Status</th>
+                                <td>
+                                    <div class="online">
+                                        <span class="status"><?php echo $record['alive'] ? 'Online' : 'Offline'; ?></span>
+                                        <div class="ajax_loading" style="display: none;"></div>
+                                    </div> <input type="hidden"
+                                        value="<?php echo $record['last_checked']; ?>"
+                                        class="input_last_checked" /> <input type="button" value="Check"
+                                        class="button sendPing" />
+                                </td>
+                            </tr>
+                            <tr class="form-field form-required last_modified">
+                                <th scope="row">Last Modified</th>
+                                <td>
+                                    <?php echo $record['last_modified'] ? $record['last_modified'] : "Never"; ?>
+                                </td>
+                            </tr>
+                            <tr class="form-field flag">
+                                <th scope="row">Exclude From Tracking</th>
+                                <td>
+                                    <?php echo ($record['flag'] == "exclude") ? "Yes" : "No"; ?>
+                                </td>
+                            </tr>
+                            <tr class="form-field notes">
+                                <th scope="row">Notes</th>
+                                <td>
+                                    <p><?php echo htmlspecialchars($record['notes']); ?></p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </form>
+
+                <?php else : ?>
+
+                <p>No record could be found.</p>
+
+                <?php endif; ?>
+
+        </div>
+
+        <?php if (isset($data['sections']['header']['tabs'])) : ?>
+
+        </div>
+
+        <?php endif; ?>
+
+</div>
+
+<?php
+    // Output Footer (if any)
+    if ($data['sections']['footer']['content'])
+        echo implode("\n", $data['sections']['footer']['content']);
+?>
+
+
+<script type="text/javascript">
+
+    <?php echo "var PIWIKACTION_PORTAL = '" . PIWIKACTION_PORTAL . "';"; ?>
+
+    $(function () {
+
+        // Handle Ping
+        $('INPUT.sendPing').ping({
+            inputClass: '.input_last_checked',
+            outputClass: false,
+            statusClass: '.online .status',
+            ajaxSpinner: '.online .ajax_loading',
+            jsonTargetBase: PIWIKACTION_PORTAL,
+        });
+
+
+    });
+
+</script>

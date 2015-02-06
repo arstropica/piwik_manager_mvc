@@ -1,0 +1,630 @@
+<?php
+
+    /**
+    * Project: PiwikManager MVC
+    * File: /templates/home/admin.phtml
+    * Purpose: Home Admin Template.
+    */
+    namespace PiwikManager\Templates\Home;
+
+    if (! defined('PIWIKAPP'))
+        exit('No direct script access allowed');
+?>
+
+<div class="container">
+    <!-- main content output -->
+
+    <?php if (isset($data['sections']['header']['tabs'])) : ?>
+
+        <div id="tabs">
+
+            <ul>
+
+                <?php foreach ($data['sections']['header']['tabs'] as $route => $tab) : ?>
+
+                    <li
+                        class="<?php echo $tab['current'] ? "current" : ""; ?>"><a
+                            href="<?php echo $tab['current'] ? "#{$route}-tab" : $tab['link']; ?>"
+                            rel="<?php echo $route; ?>"><?php echo $tab['title']; ?></a></li>
+
+                    <?php endforeach; ?>
+
+            </ul>
+
+            <?php endif; ?>
+
+        <div id="<?php echo $data['sections']['action']; ?>-tab"
+            class="account_type account_admin piwik_page_section">
+            <?php if (isset($data['meta']['title'])) : ?><h3
+                class="subtitle"><?php echo $data['meta']['title']; ?></h3><?php endif; ?>
+            <?php if (isset($data['meta']['description'])) : ?><p
+                class="subtitle-desc"><?php echo $data['meta']['description']; ?></p><?php endif; ?>
+
+            <?php
+                // Output Header (if any)
+                if ($data['sections']['header']['content'])
+                    echo implode("\n", $data['sections']['header']['content']);
+            ?>
+
+            <div id="dashboard_notices">
+                <?php
+                    // Output Messages (if any)
+                    if ($data['sections']['header']['messages'])
+                        echo implode("\n", $data['sections']['header']['messages']);
+                ?>
+            </div>
+
+            <div class="tablenav-wrap">
+                <div class="top">
+                    <div id="accounts_stats">
+                        <ul id="account_status">
+                            <?php
+                                if (isset($data['sections']['statistics'])) :
+                                    foreach ($data['sections']['statistics'] as $stat => $val) :
+                                    ?>
+                                    <li class="stat">
+                                        <div class="wrap">
+                                            <span class="stat_value">
+                                                <?php echo $val; ?>
+                                            </span> <span
+                                                class="stat_desc">
+                                                <?php
+                                                    switch ($stat) {
+                                                        case 'alive':
+                                                            echo "Online";
+                                                            break;
+
+                                                        case 'active':
+                                                            echo "Active";
+                                                            break;
+
+                                                        case 'total':
+                                                            echo "Total";
+                                                            break;
+
+                                                        default:
+                                                            echo ucwords($stat);
+                                                            break;
+                                                    }
+                                                ?>
+                                            </span>
+                                        </div> <br style="clear: both; width: 100%; height: 0px;" />
+                                    </li> 
+                                    <?php
+                                        endforeach
+                                        ;
+
+
+                                    endif;
+                            ?>
+                        </ul>
+                    </div>
+                    <div id="account_search">
+                        <form id="records-filter" name="records-filter"
+                            method="POST">
+                            <p class="search-box">
+                                <input type="search" id="record-search-input" name="s" value="">
+                                <input type="submit" name="" id="search-submit" class="button"
+                                    value="Search">
+                            </p>
+                        </form>
+                        <div style="width: 100%; height: 0px; clear: both;"></div>
+                    </div>
+                    <div style="clear: both; width: 100%; height: 0px;"></div>
+                </div>
+                <ul class="tablenav">
+                    <li class="export actions">
+                        <form id="export_actions" name="export_actions" action="<?php echo PIWIKACTION_BASE; ?>home/update&type=cron&cronsafe=mdzzsa32fs4j&mode=ajax&operation=export" method="POST">
+                            <input type="hidden" name="export" value="1">
+                            <input type="submit" name="" id="exportsubmit" class="button action" value="Export Accounts">
+                        </form>
+                    </li>
+                    <li class="bulkactions actions">
+                        <form id="bulk_actions" name="bulk_actions">
+                            <select class="bulkselectactions" name="actions">
+                                <option value="">With Selected:</option>
+                                <option value="activate">Activate</option>
+                                <option value="deactivate">Dectivate</option>
+                                <option value="include">Include</option>
+                                <option value="exclude">Exclude</option>
+                                <option value="ping">Ping</option>
+                            </select> <input type="submit" name="" id="doaction"
+                                class="button action" value="Apply">
+                        </form>
+                    </li>
+                    <li class="alivefilter actions">
+                        <form id="alive-filter" name="alive-filter"
+                            action="<?php echo PIWIKACTION_BASE; ?>home/admin" method="POST">
+                            <select class="alive_filter" id="alive_filter"
+                                name="filters[alive][criteria]">
+                                <option value="">Filter Online</option>
+                                <option value="1"
+                                    <?php echo (isset($data['sections']['filters']['alive']) && ($data['sections']['filters']['alive']['criteria'] == 1) ? ' selected="selected"' : ''); ?>>Online</option>
+                                <option value="null"
+                                    <?php echo (isset($data['sections']['filters']['alive']) && ($data['sections']['filters']['alive']['criteria'] == 'null') ? ' selected="selected"' : ''); ?>>Offline</option>
+                            </select> <input type="hidden" name="filters[alive][fields][]"
+                                value="alive" />
+                            <?php
+                                if (isset($data['sections']['filters'])) :
+                                    foreach ($data['sections']['filters'] as $filter => $filterParams) :
+                                        if ($filter != "alive") :
+                                        ?>
+                                        <input type="hidden"
+                                            name="filters[<?php echo $filter; ?>][criteria]"
+                                            value="<?php echo $filterParams['criteria']; ?>"
+                                            class="input_filters_<?php echo $filter; ?> input_sfp" />
+                                        <?php foreach (array_unique($filterParams['fields']) as $filterField) : ?>
+                                            <input type="hidden"
+                                                name="filters[<?php echo $filter; ?>][fields][]"
+                                                value="<?php echo $filterField; ?>" class="input_sfp" />
+                                            <?php
+                                                endforeach
+                                                ;
+
+
+                                            endif;
+                                        endforeach
+                                        ;
+
+
+                                    endif;
+                            ?>
+                            <input type="submit" name=""
+                                id="filteralive" class="button action" value="Filter">
+                        </form>
+                    </li>
+                    <li class="activefilter actions">
+                        <form id="active-filter" name="active-filter"
+                            action="<?php echo PIWIKACTION_BASE; ?>home/admin" method="POST">
+                            <select class="active_filter" id="active_filter"
+                                name="filters[active][criteria]">
+                                <option value="">Filter Status</option>
+                                <option value="1"
+                                    <?php echo (isset($data['sections']['filters']['active']) && ($data['sections']['filters']['active']['criteria'] == 1) ? ' selected="selected"' : ''); ?>>Active</option>
+                                <option value="null"
+                                    <?php echo (isset($data['sections']['filters']['active']) && ($data['sections']['filters']['active']['criteria'] == 'null') ? ' selected="selected"' : ''); ?>>Inactive</option>
+                            </select> <input type="hidden" name="filters[active][fields][]"
+                                value="active" />
+                            <?php
+                                if (isset($data['sections']['filters'])) :
+                                    foreach ($data['sections']['filters'] as $filter => $filterParams) :
+                                        if ($filter != "active") :
+                                        ?>
+                                        <input type="hidden"
+                                            name="filters[<?php echo $filter; ?>][criteria]"
+                                            value="<?php echo $filterParams['criteria']; ?>"
+                                            class="input_filters_<?php echo $filter; ?> input_sfp" />
+                                        <?php foreach (array_unique($filterParams['fields']) as $filterField) : ?>
+                                            <input type="hidden"
+                                                name="filters[<?php echo $filter; ?>][fields][]"
+                                                value="<?php echo $filterField; ?>" class="input_sfp" />
+                                            <?php
+                                                endforeach
+                                                ;
+
+
+                                            endif;
+                                        endforeach
+                                        ;
+
+
+                                    endif;
+                            ?>
+                            <input type="submit" name=""
+                                id="filteractive" class="button action" value="Filter">
+                        </form>
+                    </li>
+                    <li class="flagfilter actions">
+                        <form id="flag-filter" name="flag-filter"
+                            action="<?php echo PIWIKACTION_BASE; ?>home/admin" method="POST">
+                            <select class="flag_filter" id="flag_filter"
+                                name="filters[flag][criteria]">
+                                <option value="">Filter Service</option>
+                                <option value="exclude"
+                                    <?php echo (isset($data['sections']['filters']['flag']) && ($data['sections']['filters']['flag']['criteria'] == 'exclude') ? ' selected="selected"' : ''); ?>>Excluded</option>
+                                <option value="null"
+                                    <?php echo (isset($data['sections']['filters']['flag']) && ($data['sections']['filters']['flag']['criteria'] == 'null') ? ' selected="selected"' : ''); ?>>Included</option>
+                            </select> <input type="hidden" name="filters[flag][fields][]"
+                                value="flag" />
+                            <?php
+                                if (isset($data['sections']['filters'])) :
+                                    foreach ($data['sections']['filters'] as $filter => $filterParams) :
+                                        if ($filter != "flag") :
+                                        ?>
+                                        <input type="hidden"
+                                            name="filters[<?php echo $filter; ?>][criteria]"
+                                            value="<?php echo $filterParams['criteria']; ?>"
+                                            class="input_filters_<?php echo $filter; ?> input_sfp" />
+                                        <?php foreach (array_unique($filterParams['fields']) as $filterField) : ?>
+                                            <input type="hidden"
+                                                name="filters[<?php echo $filter; ?>][fields][]"
+                                                value="<?php echo $filterField; ?>" class="input_sfp" />
+                                            <?php
+                                                endforeach
+                                                ;
+
+
+                                            endif;
+                                        endforeach
+                                        ;
+
+
+                                    endif;
+                            ?>
+                            <input type="submit" name=""
+                                id="filteractive" class="button action" value="Filter">
+                        </form>
+                    </li>
+                </ul>
+                <div style="clear: both; width: 100%; height: 0px;"></div>
+            </div>
+
+            <form
+                action="<?php echo PIWIKACTION_BASE; ?>home/update&type=accounts"
+                method="POST" name="accounts" id="accounts">
+                <table class="piwik_accounts_table admin_table widefat">
+                    <thead>
+                        <tr>
+                            <th class="selection"><input type="checkbox"
+                                class="sel_all_accounts checkbox" /></th>
+                            <th
+                                class="description sortable <?php if (stristr($data['sections']['sort']['orderby'], 'Accounts_name')) echo "sorted"; ?> <?php echo ($data['sections']['sort']['order']); ?>">
+                                <a
+                                    href="<?php echo PIWIKACTION_BASE; ?>home/admin/&sort[orderby]=Accounts_name&sort[order]=<?php echo ($data['sections']['sort']['order'] != "ASC" ? "ASC" : "DESC"); ?>"
+                                    class="sfp-link <?php echo ($data['sections']['sort']['order'] != "ASC" ? "ASC" : "DESC"); ?>"
+                                    title="Sort <?php echo ($data['sections']['sort']['order'] != "ASC" ? "Ascending" : "Descending"); ?>">
+                                    <span>Name</span> <span class="sorting-indicator"></span>
+                                </a>
+                            </th>
+                            <th
+                                class="ping sortable <?php if (stristr($data['sections']['sort']['orderby'], 'last_checked')) echo "sorted"; ?> <?php echo ($data['sections']['sort']['order']); ?>">
+                                <a
+                                    href="<?php echo PIWIKACTION_BASE; ?>home/admin/&sort[orderby]=last_checked&sort[order]=<?php echo ($data['sections']['sort']['order'] != "ASC" ? "ASC" : "DESC"); ?>"
+                                    class="sfp-link <?php echo ($data['sections']['sort']['order'] != "ASC" ? "ASC" : "DESC"); ?>"
+                                    title="Sort <?php echo ($data['sections']['sort']['order'] != "ASC" ? "Ascending" : "Descending"); ?>">
+                                    <span>Last Checked</span> <span class="sorting-indicator"></span>
+                                </a>
+                            </th>
+                            <th class="domain">Domain(s)</th>
+                            <th
+                                class="actions sortable <?php if (stristr($data['sections']['sort']['orderby'], 'active')) echo "sorted"; ?> <?php echo ($data['sections']['sort']['order']); ?>">
+                                <a
+                                    href="<?php echo PIWIKACTION_BASE; ?>home/admin/&sort[orderby]=active&sort[order]=<?php echo ($data['sections']['sort']['order'] != "ASC" ? "ASC" : "DESC"); ?>"
+                                    class="sfp-link <?php echo ($data['sections']['sort']['order'] != "ASC" ? "ASC" : "DESC"); ?>"
+                                    title="Sort <?php echo ($data['sections']['sort']['order'] != "ASC" ? "Ascending" : "Descending"); ?>">
+                                    <span>Status</span> <span class="sorting-indicator"></span>
+                                </a>
+                            </th>
+                            <th class="flag">Service</th>
+                            <th class="hidden"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $i = 0; ?>
+                        <?php if ($data['sections']['records']) : ?>
+                            <?php foreach ($data['sections']['records'] as $record) : ?>
+                                <?php 
+
+                                    $exclude = false;
+
+                                    $products = array_filter(array_map("trim", explode(",", $record['products'])));
+
+                                    if ($record['flag'] == "exclude") {
+
+                                        $exclude = true;
+
+                                    } elseif ($data['sections']['active_products']) {
+
+                                        if (array_intersect($products, $data['sections']['active_products'])) {
+
+                                            $exclude = false;
+
+                                        } else {
+
+                                            $exclude = true;
+                                        }
+
+                                    } else {
+
+                                        $exclude = false;
+
+                                    }
+                                ?>
+                                <tr
+                                    class="<?php echo $record['update'] ? 'update' : ''; ?> <?php echo $record['alive'] ? 'online' : 'offline'; ?> <?php echo $record['match'] ? 'match' : 'nomatch'; ?> <?php echo $record['active'] ? 'active' : 'inactive'; ?> <?php echo $record['saved'] ? 'saved' : 'unsaved'; ?> <?php echo $exclude ? 'excluded' : ''; ?> <?php echo $i % 2 ? 'alternate' : ''; ?>"
+                                    id="account_<?php echo $record['sherpa_id']; ?>">
+                                    <td class="selection">
+                                        <input type="checkbox"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][sel]"
+                                            value="1" class="checkbox input_sel" />
+                                        <a href="#" class="trigger_ping" style="visibility: hidden;">&nbsp;</a>
+                                    </td>
+                                    <td class="description"><a
+                                            href="<?php echo PIWIKACTION_BASE . 'home/edit/' . $record['sherpa_id']; ?>"
+                                            title="<?php echo $record['description']; ?>"><?php echo $record['description']; ?></a>
+                                        <div class="row-actions">
+
+                                            <?php if ($record['active'] && $acl->isAllowed("Home", "Ping")) : ?>
+
+                                                <span class="ping"> <span
+                                                        class="ping"> <a class="sendping" href="#">Ping</a>
+                                                    </span> |
+                                                </span>
+
+                                                <?php endif; ?>
+
+                                            <?php if ($record['domain'] && $record['flag'] != 'exclude' && $acl->isAllowed("Home", "Activate")) : ?>
+
+                                                <span class="activate">
+                                                    <span class="activate"> <a href="#"
+                                                        rel="<?php echo $record['active'] ? 0 : 1; ?>"
+                                                        title="<?php echo $record['active'] ? 'Deactivate' : 'Activate'; ?>"
+                                                        class="link_activate"><?php echo $record['active'] ? 'Deactivate' : 'Activate'; ?></a>
+                                                    </span> |
+                                                </span>
+
+                                                <?php endif; ?>
+
+                                            <?php if ($acl->isAllowed("Home", "View")) : ?>
+
+                                                <span class="view"> <span
+                                                        class="view"> <a
+                                                            href="<?php echo PIWIKACTION_BASE . 'home/view/' . $record['sherpa_id']; ?>">View</a>
+                                                    </span>
+                                                </span>
+
+                                                <?php endif; ?>
+
+                                            <?php if ($acl->isAllowed("Home", "Edit")) : ?>
+
+                                                <span class="edit"> | <span
+                                                        class="edit"> <a
+                                                            href="<?php echo PIWIKACTION_BASE . 'home/edit/' . $record['sherpa_id']; ?>">Edit</a>
+                                                    </span>
+                                                </span>
+
+                                                <?php endif; ?>
+
+                                            <?php if (! $record['active'] && $acl->isAllowed("Home", "Exclude") && ($record['flag'] != "exclude")) : ?>
+
+                                                <span class="exclude"> | <span
+                                                        class="exclude"> <a
+                                                            href="#" class="link_exclude">Exclude</a>
+                                                    </span>
+                                                </span>
+
+                                                <?php elseif ($acl->isAllowed("Home", "Exclude") && ($record['flag'] == "exclude")) : ?>
+
+                                                <span class="include"> | <span
+                                                        class="include"> <a
+                                                            href="#" class="link_include">Include</a>
+                                                    </span>
+                                                </span>
+
+                                                <?php endif; ?>
+
+                                        </div> <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][description]"
+                                            value="<?php echo $record['description']; ?>"
+                                            class="input_description" /></td>
+                                    <td class="ping">
+                                        <div class="ajax_loading" style="display: none;"></div> <span
+                                            class="online"><?php echo $record['alive'] ? 'Online' : 'Offline'; ?></span>
+                                        <span class="last_checked"><?php echo $record['last_checked_elapsed']; ?></span>
+                                    </td>
+                                    <td class="domain">
+                                        <ul class="domain-list">
+                                            <li class="selected-domain">
+                                                <?php if ($record['domain']) : ?>
+                                                    <a
+                                                        href="<?php echo $record['protocol']; ?>://<?php echo $record['domain']; ?>"
+                                                        title="<?php echo $record['domain']; ?>"><?php echo $record['domain']; ?></a>
+                                                    <?php endif; ?>
+                                            </li>
+                                            <?php
+                                                $extra_domains = $record['domains'] ? array_filter(
+                                                    array_diff(
+                                                        array_map(
+                                                            function  ($url)
+                                                            {
+                                                                return @parse_url(
+                                                                    $url, 
+                                                                    PHP_URL_HOST) ?  : $url;
+                                                            }, 
+                                                            array_map(
+                                                                'rawurldecode', 
+                                                                $record['domains'])), 
+                                                        array(
+                                                            $record['domain']
+                                                ))) : false;
+                                                if ($extra_domains) :
+                                                ?>
+                                                <?php foreach ($extra_domains as $extra_domain) : ?>
+                                                    <li
+                                                        class="extra-domain">
+                                                        <?php echo $extra_domain; ?>
+                                                    </li>                                    
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                        </ul> <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][protocol]"
+                                            value="<?php echo $record['protocol']; ?>"
+                                            class="input_protocol" /> <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][domain]"
+                                            value="<?php echo $record['domain']; ?>" class="input_domain" />
+                                    </td>
+                                    <td class="status">
+                                        <?php echo $record['active'] ? "Activated" : "Inactive"; ?>
+                                    </td>
+                                    <td class="flag">
+                                        <?php echo $exclude ? "Exclude" : "Include"; ?>
+                                    </td>
+                                    <td class="hidden"><input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][id]"
+                                            value="<?php echo $record['id']; ?>" class="input_id" /> <input
+                                            type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][site_id]"
+                                            value="<?php echo $record['site_id']; ?>" class="input_site_id" />
+                                        <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][sherpa_id]"
+                                            value="<?php echo $record['sherpa_id']; ?>"
+                                            class="input_sherpa_id" /> <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][update]"
+                                            value="<?php echo $record['update']; ?>" class="input_update" />
+                                        <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][match]"
+                                            value="<?php echo $record['match']; ?>" class="input_match" /> <input
+                                            type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][active]"
+                                            value="<?php echo $record['active']; ?>" class="input_active" />
+                                        <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][alive]"
+                                            value="<?php echo $record['alive']; ?>" class="input_alive" /> <input
+                                            type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][last_checked]"
+                                            value="<?php echo $record['last_checked']; ?>"
+                                            class="input_last_checked" /> <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][last_modified]"
+                                            value="<?php echo $record['last_modified']; ?>"
+                                            class="input_last_modified" /> <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][type]"
+                                            value="<?php echo $record['type']; ?>" class="input_type" /> 
+                                        <input
+                                            type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][activate]"
+                                            value="<?php echo $record['active'] ? 1 : 0; ?>"
+                                            class="input_activate" /> <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][force]"
+                                            value="0" class="input_force" />
+                                        <input
+                                            type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][flag]"
+                                            value="<?php echo $record['flag']; ?>"
+                                            class="input_flag" /> 
+                                        <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][notes]"
+                                            value="<?php echo $record['notes']; ?>" class="input_notes" />
+                                        <input type="hidden"
+                                            name="accounts[<?php echo $record['sherpa_id']; ?>][duplicate]"
+                                            value="<?php echo $record['duplicate']; ?>" class="input_duplicate" />
+                                        <input type="hidden"
+                                            name="referrer"
+                                            value="<?php echo "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}"; ?>"
+                                            />
+                                    </td>
+                                </tr>
+                                <?php $i++; ?>
+                                <?php // if ($i > 100) break; ?>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                            <tr class="no-results">
+                                <td colspan="9">
+                                    <p class="content_middle_msg" style="font-style: italic;">No results found for "<?php echo $data['sections']['search']['term']; ?>".</p>
+                                </td>
+                            </tr>
+                            <?php endif; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="9"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <input type="hidden" name="scope" value="bulk" class="input_scope" />
+                <input type="hidden" name="sort[orderby]"
+                    value="<?php echo $data['sections']['sort']['orderby']; ?>"
+                    class="input_sort_orderby input_sfp" /> <input type="hidden"
+                    name="sort[order]"
+                    value="<?php echo $data['sections']['sort']['order']; ?>"
+                    class="input_sort_order input_sfp" /> <input type="hidden"
+                    name="referrer"
+                    value="<?php echo "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}"; ?>"
+                    class="input_referrer" />
+                <?php
+                    if (isset($data['sections']['filters'])) :
+                        foreach ($data['sections']['filters'] as $filter => $filterParams) :
+                        ?>
+                        <input type="hidden"
+                            name="filters[<?php echo $filter; ?>][criteria]"
+                            value="<?php echo $filterParams['criteria']; ?>"
+                            class="input_filters_<?php echo $filter; ?> input_sfp" />
+                        <?php foreach ($filterParams['fields'] as $filterField) : ?>
+                            <input type="hidden"
+                                name="filters[<?php echo $filter; ?>][fields][]"
+                                value="<?php echo $filterField; ?>" class="input_sfp" />
+                            <?php
+                                endforeach
+                                ;
+                            endforeach
+                            ;
+
+
+                        endif;
+                ?>
+            </form>
+
+        </div>
+
+        <?php if (isset($data['sections']['header']['tabs'])) : ?>
+
+        </div>
+
+        <?php endif; ?>
+
+</div>
+
+<?php
+    // Output Footer (if any)
+    if ($data['sections']['footer']['content'])
+        echo implode("\n", $data['sections']['footer']['content']);
+?>
+
+
+<script type="text/javascript">
+
+    <?php echo "var PIWIKACTION_PORTAL = '" . PIWIKACTION_PORTAL . "';"; ?>
+
+    $(function () {
+
+        // Handle Ping
+        $('A.sendping').ping({
+            inputClass: '.input_last_checked',
+            outputClass: '.ping .last_checked',
+            statusClass: '.ping .online',
+            ajaxSpinner: 'TD.ping .ajax_loading',
+            jsonTargetBase: PIWIKACTION_PORTAL,
+        });
+
+        $('FORM#records-filter').unbind('submit').on('submit', function(e){
+
+            e.preventDefault();
+
+            $(this).unbind('submit');
+
+            var pattern = $(this).find('INPUT[name="s"]').val();
+
+            if (pattern.length != 1) {
+
+                $('.piwik_accounts_table')
+
+                .find('TBODY TR')
+
+                .hide()
+
+                .filter(function(index) {
+
+                    return $(this).find("TD.description:Contains('" + pattern + "')").length > 0 || $(this).find("TD.domain:Contains('" + pattern + "')").length > 0;
+
+                })
+
+                .show();
+
+            }
+
+            return false;
+
+        });
+
+    });
+
+</script>

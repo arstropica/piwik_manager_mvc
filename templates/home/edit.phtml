@@ -1,0 +1,319 @@
+<?php
+
+    /**
+    * Project: PiwikManager MVC
+    * File: /templates/home/edit.phtml
+    * Purpose: Edit Account Template.
+    */
+    namespace PiwikManager\Templates\Home;
+
+    if (! defined('PIWIKAPP'))
+        exit('No direct script access allowed');
+?>
+
+<div class="container">
+    <!-- main content output -->
+
+    <?php if (isset($data['sections']['header']['tabs'])) : ?>
+
+        <div id="tabs">
+
+            <ul>
+
+                <?php foreach ($data['sections']['header']['tabs'] as $route => $tab) : ?>
+
+                    <li
+                        class="<?php echo $tab['current'] ? "current" : ""; ?>"><a
+                            href="<?php echo $tab['current'] ? "#{$route}-tab" : $tab['link']; ?>"
+                            rel="<?php echo $route; ?>"><?php echo $tab['title']; ?></a></li>
+
+                    <?php endforeach; ?>
+
+            </ul>
+
+            <?php endif; ?>
+
+        <div id="<?php echo $data['sections']['action']; ?>-tab"
+            class="account_type piwik_page_section">
+            <?php if (isset($data['meta']['title'])) : ?><h3
+                class="subtitle"><?php echo $data['meta']['title']; ?></h3><?php endif; ?>
+            <?php if (isset($data['meta']['description'])) : ?><p
+                class="subtitle-desc"><?php echo $data['meta']['description']; ?></p><?php endif; ?>
+
+            <?php
+                // Output Header (if any)
+                if ($data['sections']['header']['content'])
+                    echo implode("\n", $data['sections']['header']['content']);
+            ?>
+
+            <div id="dashboard_notices">
+                <?php
+                    // Output Messages (if any)
+                    if ($data['sections']['header']['messages'])
+                        echo implode("\n", $data['sections']['header']['messages']);
+                ?>
+            </div>
+
+            <div>
+
+                <input type="button" value="&laquo; Back" class="button back"
+                    onclick="history.back(-1)" />
+
+            </div>
+
+            <?php
+                if (isset($data['sections']['record'])) :
+
+                    $record = $data['sections']['record'];
+                ?>
+
+                <form
+                    action="<?php echo PIWIKACTION_BASE; ?>home/update&mode=ajax&type=accounts"
+                    method="POST" name="Piwik_Accounts" id="piwik_edit_account_form">
+
+                    <table id="piwik_edit_account_table"
+                        class="piwik_edit_table widefat">
+                        <tbody>
+                            <tr class="form-field form-required domain">
+                                <th scope="row">Domain</th>
+                                <td><select
+                                        name="accounts[<?php echo $record['sherpa_id']; ?>][protocol]"
+                                        class="input_protocol<?php if ($record['active']) : ?> disabled<?php endif; ?>"
+                                        <?php if ($record['active']) : ?> disabled="disabled"
+                                            <?php endif; ?>>
+                                        <option>http</option>
+                                        <option
+                                            <?php echo ($record['protocol'] == 'https' ? " selected = 'selected'" : ""); ?>>https</option>
+                                    </select> :// <input type="text"
+                                        name="accounts[<?php echo $record['sherpa_id']; ?>][domain]"
+                                        value="<?php echo $record['domain']; ?>"
+                                        title="<?php echo $record['domain']; ?>"
+                                        class="input_domain textbox<?php if ($record['active']) : ?> disabled<?php endif; ?>"
+                                        <?php if ($record['active']) : ?> readonly="readonly"
+                                            <?php endif; ?> />
+                                    <input type="hidden" id="accounts[<?php echo $record['sherpa_id']; ?>][original_protocol]" value="<?php echo $record['protocol']; ?>" class="input_original_protocol" />
+                                    <input type="hidden" id="accounts[<?php echo $record['sherpa_id']; ?>][original_domain]" value="<?php echo $record['domain']; ?>" class="input_original_domain" />
+                                </td>
+                            </tr>
+                            <tr class="form-field piwik account">
+                                <th scope="row">Piwik Account</th>
+                                <td>
+                                    <?php
+                                        if ($record['match'] && $record['site_id']) {
+
+                                            if (is_admin()) {
+
+                                                echo '<a href="' . $record['piwikurl'] .
+                                                '" title="Visit Dashboard" target="_blank">Visit Dashboard</a>';
+                                            } else {
+
+                                                echo "Found";
+                                            }
+                                        } else {
+
+                                            echo "Account has not been created";
+                                        }
+                                    ?>
+                                    <input type="hidden"
+                                        name="accounts[<?php echo $record['sherpa_id']; ?>][site_id]"
+                                        value="<?php echo $record['site_id']; ?>" class="input_site_id" />
+                                </td>
+                            </tr>
+                            <tr class="form-field form-required ping">
+                                <th scope="row">Status</th>
+                                <td>
+                                    <div class="online">
+                                        <span class="status"><?php echo $record['alive'] ? 'Online' : 'Offline'; ?></span>
+                                        <div class="ajax_loading" style="display: none;"></div>
+                                    </div> 
+                                    <input type="hidden"
+                                        name="accounts[<?php echo $record['sherpa_id']; ?>][last_checked]"
+                                        value="<?php echo $record['last_checked']; ?>"
+                                        class="input_last_checked" /> <input type="button" value="Check"
+                                        <?php if (! $record['active']) : ?> disabled="disabled"<?php endif; ?> 
+                                        class="button sendPing<?php if (! $record['active']) : ?> disabled<?php endif; ?>"
+                                        />
+                                </td>
+                            </tr>
+                            <tr class="form-field form-required active">
+                                <th scope="row">Tracking</th>
+                                <td>
+                                    <select
+                                        name="accounts[<?php echo $record['sherpa_id']; ?>][activate]"
+                                        <?php if ($record['flag'] == "exclude") : ?> disabled="disabled"<?php endif; ?> 
+                                        class="input_activate"> 
+                                        <option value="1" 
+                                            <?php if ($record['active']) : ?> selected="selected"
+                                                <?php endif; ?>>Active</option>
+                                        <option value="0" 
+                                            <?php if (! $record['active']) : ?> selected="selected"
+                                                <?php endif; ?>>Inactive</option>
+                                    </select>
+                                    <input type="hidden"
+                                        name="accounts[<?php echo $record['sherpa_id']; ?>][active]"
+                                        value="<?php echo $record['active']; ?>" class="input_active" />
+                                </td>
+                            </tr>
+                            <tr class="form-field flag">
+                                <th scope="row">Exclude From Tracking</th>
+                                <td>
+                                    <input type="checkbox" 
+                                        name="accounts[<?php echo $record['sherpa_id']; ?>][flag]" 
+                                        class="input_flag checkbox<?php if ($record['active']) : ?> disabled<?php endif; ?>" 
+                                        value="exclude" 
+                                        <?php if ($record['flag'] == "exclude") : ?> checked="checked"<?php endif; ?> 
+                                        <?php if ($record['active']) : ?> disabled="disabled"<?php endif; ?> 
+                                        />
+                                </td>
+                            </tr>
+                            <tr class="form-field form-required last_modified">
+                                <th scope="row">Last Modified</th>
+                                <td>
+                                    <?php echo $record['last_modified'] ? $record['last_modified'] : "Never"; ?>
+                                    <input type="hidden"
+                                        name="accounts[<?php echo $record['sherpa_id']; ?>][last_modified]"
+                                        value="<?php echo $record['last_modified']; ?>"
+                                        class="input_last_modified" />
+                                </td>
+                            </tr>
+                            <tr class="form-field notes">
+                                <th scope="row">Notes</th>
+                                <td>
+                                    <textarea name="accounts[<?php echo $record['sherpa_id']; ?>][notes]" class="input_notes"><?php echo htmlspecialchars($this->nldecode($record['notes'])); ?></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <input type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][id]"
+                        value="<?php echo $record['id']; ?>" class="id" /> <input
+                        type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][sherpa_id]"
+                        value="<?php echo $record['sherpa_id']; ?>" class="input_sherpa_id" />
+                    <input type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][description]"
+                        value="<?php echo $record['description']; ?>"
+                        class="input_description" /> <input type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][match]"
+                        value="<?php echo $record['match']; ?>" class="input_match" /> <input
+                        type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][update]"
+                        value="<?php echo $record['update']; ?>" class="input_update" /> <input
+                        type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][saved]"
+                        value="<?php echo $record['saved']; ?>" class="input_saved" /> <input
+                        type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][alive]"
+                        value="<?php echo $record['alive']; ?>" class="input_alive" /> <input
+                        type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][type]"
+                        value="<?php echo is_client() ? "dashboard" : "custom"; ?>"
+                        class="input_type" /> <input type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][force]"
+                        value="<?php echo $record['last_modified'] ? 0 : 1; ?>"
+                        class="input_force" /> 
+                    <input type="hidden"
+                        name="accounts[<?php echo $record['sherpa_id']; ?>][duplicate]"
+                        value="<?php echo $record['duplicate']; ?>" class="input_duplicate" />
+                    <input type="hidden" name="referrer"
+                        value="<?php echo "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}"; ?>"
+                        class="input_referrer" /> <input type="hidden" name="scope"
+                        value="single" class="input_scope" />
+
+                    <p class="submit">
+                        <input type="submit" name="submit_updatesite" id="submit"
+                            class="button button-primary"
+                            value="Update" />
+                    </p>
+
+                </form>
+
+                <?php else : ?>
+
+                <p>No record could be found.</p>
+
+                <?php endif; ?>
+
+        </div>
+
+        <?php if (isset($data['sections']['header']['tabs'])) : ?>
+
+        </div>
+
+        <?php endif; ?>
+
+</div>
+
+<?php
+    // Output Footer (if any)
+    if ($data['sections']['footer']['content'])
+        echo implode("\n", $data['sections']['footer']['content']);
+?>
+
+
+<script type="text/javascript">
+
+    <?php echo "var PIWIKACTION_PORTAL = '" . PIWIKACTION_PORTAL . "';"; ?>
+
+    $(function () {
+
+        var beforeSubmit = function(){
+
+            var account_domain = $('#piwik_edit_account_form .input_original_domain').val();
+
+            var account_scheme = $('#piwik_edit_account_form .input_original_protocol').val();
+
+            var account_duplicate = $('#piwik_edit_account_form .input_duplicate').val();
+
+            if ($('#piwik_edit_account_form .input_force').val() == '0') {
+
+                var current_domain = $('#piwik_edit_account_form TR.domain INPUT[type=text]').val();
+
+                var current_scheme = $('#piwik_edit_account_form TR.domain SELECT').val();
+
+                if (account_domain != current_domain || account_scheme != current_scheme) {
+
+                    if (confirm("The Account URL has been changed.  Are you sure?")) {
+
+                        $('#piwik_edit_account_form .input_force').val('1');
+
+                    } else {
+
+                        return false;
+
+                    }
+                }
+
+                if (account_duplicate != "0") {
+
+                    if (confirm("The Account URL is already being tracked.  Are you sure?")) {
+
+                        $('#piwik_edit_account_form .input_force').val('1');
+
+                    } else {
+
+                        return false;
+
+                    }
+                }
+
+            }
+
+        };
+
+        $('#piwik_edit_account_form').validate({callBack: beforeSubmit});
+
+        // Handle Ping
+        $('INPUT.sendPing').ping({
+            inputClass: '.input_last_checked',
+            outputClass: false,
+            statusClass: '.online .status',
+            ajaxSpinner: '.online .ajax_loading',
+            jsonTargetBase: PIWIKACTION_PORTAL,
+        });
+
+
+    });
+
+</script>
